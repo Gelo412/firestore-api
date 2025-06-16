@@ -6,49 +6,88 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const serviceAccount = require('./serviceAccountKey.json');
+// 🔐 Initialize Firebase Admin with credentials from environment variable
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
 });
 
 const db = admin.firestore();
 
-// Generic helper to fetch any collection
-const getCollectionData = async (collectionName, res) => {
+// ✅ GET all users
+app.get('/api/users', async (req, res) => {
   try {
-    const snapshot = await db.collection(collectionName).get();
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.json(data);
+    const snapshot = await db.collection('users').get();
+    const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(users);
   } catch (error) {
-    res.status(500).send(`Error fetching ${collectionName}: ${error.message}`);
+    res.status(500).send('Error fetching users: ' + error.message);
   }
-};
-
-// Users
-app.get('/api/users', (req, res) => getCollectionData('users', res));
-
-// FoodReward
-app.get('/api/food-reward', (req, res) => getCollectionData('FoodReward', res));
-
-// Activity Log
-app.get('/api/activity-log', (req, res) => getCollectionData('activityLog', res));
-
-// Bottles
-app.get('/api/bottles', (req, res) => getCollectionData('bottles', res));
-
-// Dashboard
-app.get('/api/dashboard', (req, res) => getCollectionData('dashboard', res));
-
-// Notifications
-app.get('/api/notifications', (req, res) => getCollectionData('notifications', res));
-
-// Default message
-app.get('/', (req, res) => {
-  res.send('🔥 Firestore API is running');
 });
 
-// Server
-app.listen(3000, () => {
-  console.log('✅ Server running at http://localhost:3000');
+// ✅ GET all FoodReward entries
+app.get('/api/food-rewards', async (req, res) => {
+  try {
+    const snapshot = await db.collection('FoodReward').get();
+    const rewards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(rewards);
+  } catch (error) {
+    res.status(500).send('Error fetching food rewards: ' + error.message);
+  }
+});
+
+// ✅ GET all activity logs
+app.get('/api/activity-logs', async (req, res) => {
+  try {
+    const snapshot = await db.collection('activityLog').get();
+    const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(logs);
+  } catch (error) {
+    res.status(500).send('Error fetching activity logs: ' + error.message);
+  }
+});
+
+// ✅ GET all bottles
+app.get('/api/bottles', async (req, res) => {
+  try {
+    const snapshot = await db.collection('bottles').get();
+    const bottles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(bottles);
+  } catch (error) {
+    res.status(500).send('Error fetching bottles: ' + error.message);
+  }
+});
+
+// ✅ GET dashboard data
+app.get('/api/dashboard', async (req, res) => {
+  try {
+    const snapshot = await db.collection('dashboard').get();
+    const dashboard = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(dashboard);
+  } catch (error) {
+    res.status(500).send('Error fetching dashboard: ' + error.message);
+  }
+});
+
+// ✅ GET notifications
+app.get('/api/notifications', async (req, res) => {
+  try {
+    const snapshot = await db.collection('notifications').get();
+    const notifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).send('Error fetching notifications: ' + error.message);
+  }
+});
+
+// ✅ Root route
+app.get('/', (req, res) => {
+  res.send('🎉 Firestore API is running!');
+});
+
+// ✅ Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server is running on http://localhost:${PORT}`);
 });
