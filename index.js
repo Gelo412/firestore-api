@@ -2,7 +2,17 @@ const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG_JSON);
+// Parse FIREBASE_CONFIG_JSON or show a helpful error
+let serviceAccount;
+try {
+  if (!process.env.FIREBASE_CONFIG_JSON) {
+    throw new Error('FIREBASE_CONFIG_JSON is not set.');
+  }
+  serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG_JSON);
+} catch (err) {
+  console.error('Failed to parse FIREBASE_CONFIG_JSON:', err.message);
+  process.exit(1);
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -26,11 +36,12 @@ app.get('/notifications', async (req, res) => {
     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(data);
   } catch (err) {
+    console.error('Error fetching notifications:', err);
     res.status(500).send(err.message);
   }
 });
 
-// Dashboard - Example Summary Route
+// Dashboard Summary
 app.get('/dashboard', async (req, res) => {
   try {
     const bottlesSnap = await db.collection('bottles').get();
@@ -43,6 +54,7 @@ app.get('/dashboard', async (req, res) => {
       totalUsers: usersSnap.size
     });
   } catch (err) {
+    console.error('Error fetching dashboard data:', err);
     res.status(500).send(err.message);
   }
 });
@@ -54,6 +66,7 @@ app.get('/bottles', async (req, res) => {
     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(data);
   } catch (err) {
+    console.error('Error fetching bottles:', err);
     res.status(500).send(err.message);
   }
 });
@@ -65,6 +78,7 @@ app.get('/activity-logs', async (req, res) => {
     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(data);
   } catch (err) {
+    console.error('Error fetching activity logs:', err);
     res.status(500).send(err.message);
   }
 });
@@ -76,11 +90,24 @@ app.get('/food-rewards', async (req, res) => {
     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(data);
   } catch (err) {
+    console.error('Error fetching food rewards:', err);
+    res.status(500).send(err.message);
+  }
+});
+
+// ✅ Users
+app.get('/users', async (req, res) => {
+  try {
+    const snapshot = await db.collection('users').get();
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(data);
+  } catch (err) {
+    console.error('Error fetching users:', err);
     res.status(500).send(err.message);
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
