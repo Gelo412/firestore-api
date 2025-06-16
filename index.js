@@ -9,11 +9,13 @@ try {
     throw new Error('FIREBASE_CONFIG_JSON is not set.');
   }
   serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG_JSON);
+  console.log("✅ Firebase config loaded (first 20 chars):", process.env.FIREBASE_CONFIG_JSON.slice(0, 20));
 } catch (err) {
-  console.error('Failed to parse FIREBASE_CONFIG_JSON:', err.message);
+  console.error('❌ Failed to parse FIREBASE_CONFIG_JSON:', err.message);
   process.exit(1);
 }
 
+// Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -26,7 +28,7 @@ app.use(express.json());
 
 // Root route
 app.get('/', (req, res) => {
-  res.send('Firestore API is running');
+  res.send('✅ Firestore API is running');
 });
 
 // Notifications
@@ -95,7 +97,7 @@ app.get('/food-rewards', async (req, res) => {
   }
 });
 
-// ✅ Users
+// Users
 app.get('/users', async (req, res) => {
   try {
     const snapshot = await db.collection('users').get();
@@ -109,5 +111,5 @@ app.get('/users', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
